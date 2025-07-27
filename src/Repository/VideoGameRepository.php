@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\VideoGame;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,28 +17,21 @@ class VideoGameRepository extends ServiceEntityRepository
         parent::__construct($registry, VideoGame::class);
     }
 
-    //    /**
-    //     * @return VideoGame[] Returns an array of VideoGame objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('v.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @throws Exception
+     */
+    public function findVideoGameByName(string $title): array
+    {
 
-    //    public function findOneBySomeField($value): ?VideoGame
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT * FROM video_game v
+            WHERE v.title LIKE :title
+            ';
+
+        return $conn->executeQuery($sql, ['title' => strtolower(trim($title))])->fetchAssociative();
+    }
+
+
 }
