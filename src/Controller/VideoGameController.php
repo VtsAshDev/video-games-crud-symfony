@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class VideoGameController
 {
     public function __construct(
-       private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager
     ) {
     }
 
@@ -34,10 +34,22 @@ class VideoGameController
     {
 //        $videoGame = $entityManager->getRepository(VideoGame::class)->find($id);
 
-        if (null === $videoGame){
+        if (null === $videoGame) {
             throw new NotFoundHttpException("Video game nao encontrado");
         }
-        return new Response('Video game encontrado :'. $videoGame->getTitle());
+        return new Response('Video game encontrado :' . $videoGame->getTitle());
+    }
+
+    #[Route('/api/videogame/title/{title}')]
+    public function showByTitle(string $title): Response
+    {
+        $videogame = $this->entityManager->getRepository(VideoGame::class)->findVideoGameByName($title);
+
+        if (null !== $videogame) {
+            throw new NotFoundHttpException("Video game nao encontrado");
+        }
+
+        return new Response('Video game encontrado :' . $videogame['title']);
     }
 
     #[Route('/api/videogame/edit/{id}', name: 'edit_video_game')]
@@ -50,7 +62,7 @@ class VideoGameController
             );
         }
 
-        $videoGame->setTitle("O Bom de guerra");
+        $videoGame->setTitle("bom de guerra");
         $this->entityManager->persist($videoGame);
         $this->entityManager->flush();
 
@@ -70,4 +82,6 @@ class VideoGameController
         $this->entityManager->flush();
         return new Response("Usuario deleteado com sucesso");
     }
+
+
 }
