@@ -2,54 +2,52 @@
 
 namespace App\Controller;
 
+use App\Contracts\VideoGameServiceInterface;
 use App\Entity\VideoGame;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Throwable;
 
 class VideoGameController
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private VideoGameServiceInterface $videoGameService
     ) {
     }
 
     #[Route('/api/videogame', name: 'create_video_game')]
     public function createVideoGame(): Response
     {
-        $videoGame = new VideoGame();
-        $videoGame->setTitle("bom de guerra");
-        $videoGame->setGenre("Acao");
-        $videoGame->setDeveloper("santa monica");
-        $videoGame->setReleaseDate(new \DateTime());
+        try {
+            $this->videoGameService->create();
+        } catch (\Throwable $exception) {
+            throw new NotFoundHttpException("Erro ao criar o video game");
+        }
 
-        $this->entityManager->persist($videoGame);
-        $this->entityManager->flush();
-        return new Response("Novo video game salvo with id: " . $videoGame->getId());
+        return new Response("Video game Criado com sucesso");
     }
 
     #[Route('/api/videogame/{id}', name: 'show_video_game')]
-    public function show(?VideoGame $videoGame): Response
+    public function show(int $id): Response
     {
-//        $videoGame = $entityManager->getRepository(VideoGame::class)->find($id);
+        try {
+            $videoGame = $this->videoGameService->findById($id);
 
-        if (null === $videoGame) {
-            throw new NotFoundHttpException("Video game nao encontrado");
+            return new Response('Video game encontrado: ' . $videoGame->getTitle());
+        } catch (Throwable $exception) {
+            throw new NotFoundHttpException($exception->getMessage());
         }
-        return new Response('Video game encontrado :' . $videoGame->getTitle());
     }
 
     #[Route('/api/videogame/title/{title}')]
     public function showByTitle(string $title): Response
     {
-        $videogame = $this->entityManager->getRepository(VideoGame::class)->findVideoGameByName($title);
+        $videogame = $this->videoGameService->findByTitle($title);
 
-        if (null !== $videogame) {
-            throw new NotFoundHttpException("Video game nao encontrado");
-        }
-
-        return new Response('Video game encontrado :' . $videogame['title']);
+        return new Response('Video game encontrado :' . $videogame->getTitle());
     }
 
     #[Route('/api/videogame/edit/{id}', name: 'edit_video_game')]
@@ -62,11 +60,10 @@ class VideoGameController
             );
         }
 
-        $videoGame->setTitle("bom de guerra");
-        $this->entityManager->persist($videoGame);
-        $this->entityManager->flush();
+        $videoGame->setTitle("Lara croft");
+        $this->videoGameService->updateVideoGame($videoGame);
 
-        return $this->show($videoGame);
+        return $this->show($videoGame->getId());
     }
 
     #[Route('/api/videogame/delete/{id}', name: 'delete_video_game')]
@@ -78,8 +75,7 @@ class VideoGameController
             );
         }
 
-        $this->entityManager->remove($videoGame);
-        $this->entityManager->flush();
+        $this->videoGameService->deleteVideoGame($videoGame);
         return new Response("Usuario deleteado com sucesso");
     }
 
