@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PlatformRepository;
 use Doctrine\ORM\Mapping as ORM;
-
+use Doctrine\Common\Collections\Collection;
 #[ORM\Entity(repositoryClass: PlatformRepository::class)]
 class Platform
 {
@@ -15,6 +15,9 @@ class Platform
 
     #[ORM\Column(length: 100)]
     private ?string $name = null;
+
+    #[ORM\ManyToMany(targetEntity: VideoGame::class, mappedBy: 'platforms')]
+    private Collection $videoGames;
 
     public function getId(): ?int
     {
@@ -31,5 +34,10 @@ class Platform
         $this->name = $name;
 
         return $this;
+    }
+
+    public function getVideoGames(): Collection
+    {
+        return $this->videoGames;
     }
 }
