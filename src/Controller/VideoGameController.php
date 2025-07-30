@@ -83,5 +83,18 @@ class VideoGameController
         return new Response("Usuario deleteado com sucesso");
     }
 
+    #[Route('/api/videogame/platform/{platformName}', name: 'video_game_by_platform', methods: ['GET'])]
+    public function showVideoGamesByPlatform(string $platformName): Response
+    {
+        if (!$platformName) {
+            throw new NotFoundHttpException(
+                "Video games nao encontrado"
+            );
+        }
+
+        $videoGames = $this->videoGameService->getVideoGamesByPlatform($platformName);
+
+        return new Response('Video games encontrados');
+    }
 
 }

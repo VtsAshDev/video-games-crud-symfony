@@ -52,6 +52,7 @@ class VideoGameRepository extends ServiceEntityRepository
             ->createQueryBuilder()
             ->select('v')
             ->from(VideoGame::class, 'v')
+            ->innerJoin('v.platforms', 'p')
             ->where('LOWER(v.title) LIKE :title')
             ->setParameter('title', '%' . $title . '%')
             ->setMaxResults(1)
@@ -70,4 +71,17 @@ class VideoGameRepository extends ServiceEntityRepository
         $this->getEntityManager()->remove($videoGame);
         $this->getEntityManager()->flush();
     }
+
+    public function findByPlatform(string $platformName): array
+    {
+        $platformName = strtolower(trim($platformName));
+
+        return $this->createQueryBuilder('v')
+            ->innerJoin('v.platforms', 'p')
+            ->where('LOWER(p.name) LIKE :platformName')
+            ->setParameter('platformName', '%' . $platformName . '%')
+            ->getQuery()
+            ->getResult();
+    }
+
 }

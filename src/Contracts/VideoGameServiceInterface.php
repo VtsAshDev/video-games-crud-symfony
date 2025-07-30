@@ -16,4 +16,6 @@ interface VideoGameServiceInterface
     public function updateVideoGame(VideoGame $videoGame, VideoGameDto $videoGameDto): void;
 
     public function deleteVideoGame(VideoGame $videoGame): void;
+
+    public function getVideoGamesByPlatform(string $platformName): array;
 }

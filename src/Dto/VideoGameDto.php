@@ -20,6 +20,9 @@ class VideoGameDto
 
         #[Assert\NotBlank]
         public readonly \DateTime $releaseDate,
+
+        #[Assert\NotBlank]
+        public array $platformNames
     ) {
     }
 
@@ -41,5 +44,9 @@ class VideoGameDto
     public function getReleaseDate(): \DateTime
     {
         return $this->releaseDate;
+    }
+    public function getPlatformNames(): array
+    {
+        return $this->platformNames;
     }
 }

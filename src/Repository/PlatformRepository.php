@@ -16,6 +16,15 @@ class PlatformRepository extends ServiceEntityRepository
         parent::__construct($registry, Platform::class);
     }
 
+    public function findDefaults(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.name IN (:names)')
+            ->setParameter('names', ['PLASYSTATION','XBOX','PC'])
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Platform[] Returns an array of Platform objects
     //     */

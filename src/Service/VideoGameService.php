@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Contracts\VideoGameServiceInterface;
 use App\Dto\VideoGameDto;
 use App\Entity\VideoGame;
+use App\Repository\PlatformRepository;
 use App\Repository\VideoGameRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +14,8 @@ use http\Exception\RuntimeException;
 class VideoGameService implements VideoGameServiceInterface
 {
     public function __construct(
-        private VideoGameRepository $videoGameRepository
+        private VideoGameRepository $videoGameRepository,
+        private readonly PlatformRepository $platformRepository
     ) {
     }
 
@@ -27,6 +29,16 @@ class VideoGameService implements VideoGameServiceInterface
         $videoGame->setGenre($videoGameDto->getGenre());
         $videoGame->setDeveloper($videoGameDto->getDeveloper());
         $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
+
+        $platforms = $this->platformRepository->createQueryBuilder('p')
+        ->where('p.name IN (:names)')
+        ->setParameter('names', $videoGameDto->getPlatformNames())
+        ->getQuery()
+        ->getResult();
+
+        foreach ($platforms as $platform) {
+            $videoGame->addPlatform($platform);
+        }
 
         try {
             $this->videoGameRepository->beginTransaction();
@@ -101,6 +113,16 @@ class VideoGameService implements VideoGameServiceInterface
         } catch (\Exception $e) {
             throw new \RuntimeException("Video game nao DELETADO");
         }
+    }
+
+    public function getVideoGamesByPlatform(string $platformName): array
+    {
+        $games = $this->videoGameRepository->findByPlatform($platformName);
+        if (empty($games))
+        {
+            throw new \RuntimeException("Nenhum video game encontrado para plataforma:". $platformName);
+        }
+        return $games;
     }
 
 }
