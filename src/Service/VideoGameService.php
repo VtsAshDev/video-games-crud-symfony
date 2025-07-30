@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Contracts\VideoGameServiceInterface;
+use App\Dto\VideoGameDto;
 use App\Entity\VideoGame;
 use App\Repository\VideoGameRepository;
 use Doctrine\DBAL\Exception;
@@ -12,22 +13,20 @@ use http\Exception\RuntimeException;
 class VideoGameService implements VideoGameServiceInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
         private VideoGameRepository $videoGameRepository
     ) {
     }
 
-
     /**
      * @throws \Exception
      */
-    public function create(): void
+    public function create(VideoGameDto $videoGameDto): void
     {
         $videoGame = new VideoGame();
-        $videoGame->setTitle("bom de guerra");
-        $videoGame->setGenre("Acao");
-        $videoGame->setDeveloper("santa monica");
-        $videoGame->setReleaseDate(new \DateTime());
+        $videoGame->setTitle($videoGameDto->getTitle());
+        $videoGame->setGenre($videoGameDto->getGenre());
+        $videoGame->setDeveloper($videoGameDto->getDeveloper());
+        $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
 
         try {
             $this->videoGameRepository->beginTransaction();
@@ -61,8 +60,27 @@ class VideoGameService implements VideoGameServiceInterface
         return $videoGame;
     }
 
-    public function updateVideoGame(VideoGame $videoGame): void
+    public function updateVideoGame(VideoGame $videoGame,VideoGameDto $videoGameDto): void
     {
+        $hasChanges = false;
+
+        if ($videoGame->getTitle() !== $videoGameDto->getTitle()) {
+            $videoGame->setTitle($videoGameDto->getTitle());
+            $hasChanges = true;
+        }
+        if ($videoGame->getGenre() !== $videoGameDto->getGenre()) {
+            $videoGame->setGenre($videoGameDto->getGenre());
+            $hasChanges = true;
+        }
+        if ($videoGame->getDeveloper() !== $videoGameDto->getDeveloper()) {
+            $videoGame->setDeveloper($videoGameDto->getDeveloper());
+            $hasChanges = true;
+        }
+
+        if (!$hasChanges) {
+            throw new \RuntimeException("Não há dados a serem alterados no VideoGame: ". $videoGame->getTitle());
+        }
+
         try {
             $this->videoGameRepository->beginTransaction();
             $this->videoGameRepository->updateVideoGame($videoGame);

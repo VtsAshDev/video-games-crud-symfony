@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use App\Contracts\VideoGameServiceInterface;
+use App\Dto\VideoGameDto;
 use App\Entity\VideoGame;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Throwable;
@@ -13,16 +14,18 @@ use Throwable;
 class VideoGameController
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private VideoGameServiceInterface $videoGameService
+        private VideoGameServiceInterface $videoGameService,
+
     ) {
     }
 
-    #[Route('/api/videogame', name: 'create_video_game')]
-    public function createVideoGame(): Response
-    {
+    #[Route('/api/videogame', name: 'create_video_game', methods: ['POST'])]
+    public function createVideoGame(
+        #[MapRequestPayload] VideoGameDto $videoGameDto
+    ): Response {
+
         try {
-            $this->videoGameService->create();
+            $this->videoGameService->create($videoGameDto);
         } catch (\Throwable $exception) {
             throw new NotFoundHttpException("Erro ao criar o video game");
         }
@@ -50,9 +53,11 @@ class VideoGameController
         return new Response('Video game encontrado :' . $videogame->getTitle());
     }
 
-    #[Route('/api/videogame/edit/{id}', name: 'edit_video_game')]
-    public function update(?VideoGame $videoGame): Response
-    {
+    #[Route('/api/videogame/edit/{id}', name: 'edit_video_game', methods: ['PUT'])]
+    public function update(
+        ?VideoGame $videoGame,
+        #[MapRequestPayload] VideoGameDto $videoGameDto
+    ): Response {
 
         if (!$videoGame) {
             throw new NotFoundHttpException(
@@ -60,8 +65,7 @@ class VideoGameController
             );
         }
 
-        $videoGame->setTitle("Lara croft");
-        $this->videoGameService->updateVideoGame($videoGame);
+        $this->videoGameService->updateVideoGame($videoGame,$videoGameDto);
 
         return $this->show($videoGame->getId());
     }
