@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Json;
 use Throwable;
 
-class VideoGameController
+readonly class VideoGameController
 {
     public function __construct(
         private VideoGameServiceInterface $videoGameService
@@ -35,7 +35,7 @@ class VideoGameController
         return new JsonResponse(["message"=>"Video game Criado com sucesso"], Response::HTTP_CREATED);
     }
 
-    #[Route('/api/videogame/{id}', name: 'show_video_game')]
+    #[Route('/api/videogame/{id}', name: 'show_video_game', methods: ['GET'])]
     public function show(int $id): Response
     {
         try {
@@ -47,7 +47,7 @@ class VideoGameController
         }
     }
 
-    #[Route('/api/videogame/title/{title}')]
+    #[Route('/api/videogame/title/{title}', name: 'show_title', methods: ['GET'])]
     public function showByTitle(string $title): Response
     {
         try {
@@ -62,12 +62,13 @@ class VideoGameController
     #[Route('/api/videogame/edit/{id}', name: 'edit_video_game', methods: ['PUT'])]
     public function update(
         ?VideoGame $videoGame,
-        #[MapRequestPayload] VideoGameWithPlatformDto $videoGameDto
+       #[MapRequestPayload] CreateVideoGameDto $videoGameDto
     ): Response {
 
         if (!$videoGame) {
-            throw new NotFoundHttpException(
-                "Video game nao encontrado"
+            return new JsonResponse([
+                "message" => "Video game nao encontrado"],
+                Response::HTTP_NOT_FOUND
             );
         }
 

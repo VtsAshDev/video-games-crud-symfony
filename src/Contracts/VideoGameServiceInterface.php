@@ -14,7 +14,7 @@ interface VideoGameServiceInterface
 
     public function findByTitle(string $title): string;
 
-    public function updateVideoGame(VideoGame $videoGame, VideoGameWithPlatformDto $videoGameDto): void;
+    public function updateVideoGame(VideoGame $videoGame, CreateVideoGameDto $videoGameDto): void;
 
     public function deleteVideoGame(VideoGame $videoGame): void;
 

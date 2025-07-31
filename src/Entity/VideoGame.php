@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: VideoGameRepository::class)]
 class VideoGame
 {
+
     #[ORM\ManyToMany(targetEntity: Platform::class, inversedBy: 'video_games')]
     #[ORM\JoinTable(name: 'video_game_platform')]
     private Collection $platforms;
@@ -106,4 +107,11 @@ class VideoGame
         $this->platforms->removeElement($platform);
         return $this;
     }
+
+    public function clearPlatforms(): self
+    {
+        $this->platforms->clear();
+        return $this;
+    }
+
 }

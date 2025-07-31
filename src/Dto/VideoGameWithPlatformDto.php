@@ -9,7 +9,7 @@ class VideoGameWithPlatformDto
     public function __construct(
 
         #[Assert\NotBlank]
-        public readonly string $id,
+        public readonly int $id,
 
         #[Assert\NotBlank]
         #[Assert\Length(min: 1, max: 100)]
