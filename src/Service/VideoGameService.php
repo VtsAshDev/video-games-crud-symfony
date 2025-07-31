@@ -3,64 +3,88 @@
 namespace App\Service;
 
 use App\Contracts\VideoGameServiceInterface;
-use App\Dto\VideoGameDto;
+use App\Dto\CreateVideoGameDto;
+use App\Dto\VideoGameWithPlatformDto;
 use App\Entity\VideoGame;
+use App\Mapper\VideoGameMapper;
+use App\Repository\PlatformRepository;
 use App\Repository\VideoGameRepository;
-use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
-use http\Exception\RuntimeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class VideoGameService implements VideoGameServiceInterface
 {
     public function __construct(
-        private VideoGameRepository $videoGameRepository
+        private VideoGameRepository $videoGameRepository,
+        private readonly PlatformRepository $platformRepository,
+        private SerializerInterface $serializer,
+        private readonly VideoGameMapper $videoGameMapper
     ) {
     }
 
     /**
      * @throws \Exception
      */
-    public function create(VideoGameDto $videoGameDto): void
+    public function create(CreateVideoGameDto $videoGameDto): void
     {
-        $videoGame = new VideoGame();
-        $videoGame->setTitle($videoGameDto->getTitle());
-        $videoGame->setGenre($videoGameDto->getGenre());
-        $videoGame->setDeveloper($videoGameDto->getDeveloper());
-        $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
-
         try {
+            $videoGame = new VideoGame();
+            $videoGame->setTitle($videoGameDto->getTitle());
+            $videoGame->setGenre($videoGameDto->getGenre());
+            $videoGame->setDeveloper($videoGameDto->getDeveloper());
+            $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
+
+            $platforms = $this->platformRepository->findPlatforms($videoGameDto->getPlatform());
+            if (empty($platforms)) {
+                throw new NotFoundHttpException("Plataformas nao podem estar em branco");
+            }
+
+            foreach ($platforms as $platform) {
+                $videoGame->addPlatform($platform);
+            }
+
             $this->videoGameRepository->beginTransaction();
             $this->videoGameRepository->save($videoGame);
             $this->videoGameRepository->commit();
         } catch (\Exception $e) {
             $this->videoGameRepository->rollback();
-            throw new RuntimeException("Nao foi possivel cadastrar o video game");
+            throw new \RuntimeException("Não foi possível cadastrar o video game");
         }
     }
 
-    public function findById(int $id): VideoGame
+    /**
+     * @throws ExceptionInterface
+     */
+    public function findById(int $id): string
     {
         $videoGame = $this->videoGameRepository->find($id);
 
-        if (null === $videoGame) {
-            throw new \RuntimeException("Video game nao encontrado");
+        if (!$videoGame) {
+            throw new NotFoundHttpException("Video game nao encontrado");
         }
 
-        return $videoGame;
+        $dto = $this->videoGameMapper->toDto($videoGame);
+
+        return $this->serializer->serialize($dto, 'json');
     }
 
-    public function findByTitle(string $title): VideoGame
+    /**
+     * @throws ExceptionInterface
+     */
+    public function findByTitle(string $title): string
     {
         $videoGame = $this->videoGameRepository->findVideoGameByName($title);
-
-        if (null === $videoGame) {
-            throw new \RuntimeException("Video game nao encontrado");
+        if (!$videoGame) {
+            throw new NotFoundHttpException("Video game nao encontrado");
         }
 
-        return $videoGame;
+        $dto = $this->videoGameMapper->toDto($videoGame);
+
+        return $this->serializer->serialize($dto, 'json');
     }
 
-    public function updateVideoGame(VideoGame $videoGame,VideoGameDto $videoGameDto): void
+    public function updateVideoGame(VideoGame $videoGame,VideoGameWithPlatformDto $videoGameDto): void
     {
         $hasChanges = false;
 
@@ -101,6 +125,29 @@ class VideoGameService implements VideoGameServiceInterface
         } catch (\Exception $e) {
             throw new \RuntimeException("Video game nao DELETADO");
         }
+    }
+
+    /**
+     * @throws ExceptionInterface
+     */
+    public function getVideoGamesByPlatform(int $platform): string
+    {
+        $games = $this->videoGameRepository->findByPlatform($platform);
+        $jsonGames = [];
+
+        foreach($games as $game)
+        {
+            $gameDTO = $this->videoGameMapper->toDto($game);
+            $jsonGames[] = $gameDTO;
+        }
+
+        $json = $this->serializer->serialize($jsonGames, 'json');
+
+        if (empty($games)) {
+            throw new \RuntimeException("Nenhum video game encontrado");
+        }
+
+        return $json;
     }
 
 }

@@ -16,6 +16,15 @@ class PlatformRepository extends ServiceEntityRepository
         parent::__construct($registry, Platform::class);
     }
 
+    public function findPlatforms(array $platform): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', $platform)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Platform[] Returns an array of Platform objects
     //     */
