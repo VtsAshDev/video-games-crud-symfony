@@ -72,14 +72,12 @@ class VideoGameRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function findByPlatform(string $platformName): array
+    public function findByPlatform(int $platform): array
     {
-        $platformName = strtolower(trim($platformName));
-
         return $this->createQueryBuilder('v')
             ->innerJoin('v.platforms', 'p')
-            ->where('LOWER(p.name) LIKE :platformName')
-            ->setParameter('platformName', '%' . $platformName . '%')
+            ->where('p.id = :platform')
+            ->setParameter('platform', $platform)
             ->getQuery()
             ->getResult();
     }

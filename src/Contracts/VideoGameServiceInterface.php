@@ -2,20 +2,21 @@
 
 namespace App\Contracts;
 
-use App\Dto\VideoGameDto;
+use App\Dto\CreateVideoGameDto;
+use App\Dto\VideoGameWithPlatformDto;
 use App\Entity\VideoGame;
 
 interface VideoGameServiceInterface
 {
-    public function create(VideoGameDto $videoGameDto): void;
+    public function create(CreateVideoGameDto $videoGameDto): void;
 
-    public function findById(int $id): ?VideoGame;
+    public function findById(int $id): string;
 
-    public function findByTitle(string $title): VideoGame;
+    public function findByTitle(string $title): string;
 
-    public function updateVideoGame(VideoGame $videoGame, VideoGameDto $videoGameDto): void;
+    public function updateVideoGame(VideoGame $videoGame, VideoGameWithPlatformDto $videoGameDto): void;
 
     public function deleteVideoGame(VideoGame $videoGame): void;
 
-    public function getVideoGamesByPlatform(string $platformName): array;
+    public function getVideoGamesByPlatform(int $platform): string;
 }
