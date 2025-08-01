@@ -8,7 +8,6 @@ use App\Entity\VideoGame;
 
 interface VideoGameServiceInterface
 {
-    public function create(CreateVideoGameDto $videoGameDto): void;
 
     public function findById(int $id): string;
 

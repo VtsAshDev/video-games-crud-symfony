@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Contracts\CreateVideoGameInterface;
 use App\Contracts\VideoGameServiceInterface;
 use App\Dto\CreateVideoGameDto;
 use App\Dto\VideoGameWithPlatformDto;
@@ -17,7 +18,8 @@ use Throwable;
 readonly class VideoGameController
 {
     public function __construct(
-        private VideoGameServiceInterface $videoGameService
+        private VideoGameServiceInterface $videoGameService,
+        private CreateVideoGameInterface $createVideoGameService,
     ) {
     }
 
@@ -27,7 +29,7 @@ readonly class VideoGameController
     ): Response {
 
         try {
-            $this->videoGameService->create($videoGameDto);
+            $this->createVideoGameService->create($videoGameDto);
         } catch (\Throwable $exception) {
             return new JsonResponse(["message"=>"Nao foi possivel criar o videogame"], Response::HTTP_BAD_REQUEST);
         }
