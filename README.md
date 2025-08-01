@@ -19,7 +19,7 @@ Este projeto é uma aplicação CRUD (Create, Read, Update, Delete) desenvolvida
 
 - PHP (Symfony)
 - Doctrine ORM
-- PostgreSQL ou MySQL
+- PostgreSQL
 - API Platform ou Controllers personalizados
 - Composer
 - PHPUnit (opcional)
