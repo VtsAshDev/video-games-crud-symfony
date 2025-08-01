@@ -28,7 +28,7 @@ readonly class UpdateVideoGameService implements UpdateVideoGameInterface
             $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
             $videoGame->clearPlatforms();
 
-            foreach ($videoGameDto->getPlatform() as $platform) {
+            foreach ($videoGameDto->getPlatforms() as $platform) {
                 $findedPlatform = $this->platformRepository->find($platform);
                 if (!$findedPlatform) {
                     throw new NotFoundHttpException("Plataforma nao encontrado");

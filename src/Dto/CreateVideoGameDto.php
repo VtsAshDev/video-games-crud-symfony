@@ -2,7 +2,12 @@
 
 namespace App\Dto;
 use App\Entity\Platform;
+use DateTime;
+use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+
+#[OA\Schema()]
 class CreateVideoGameDto
 {
     public function __construct(
@@ -20,8 +25,13 @@ class CreateVideoGameDto
         public readonly string $developer,
 
         #[Assert\NotBlank]
-        public readonly \DateTime $releaseDate,
+        public readonly DateTime $releaseDate,
 
+        #[OA\Property(
+            description: "Lista de IDs das plataformas",
+            type: "array",
+            items: new OA\Items(type: "integer")
+        )]
         #[Assert\NotBlank(message: "Plataforma nao pode ser vazio")]
         public array  $platforms,
     ) {
@@ -42,12 +52,12 @@ class CreateVideoGameDto
         return $this->developer;
     }
 
-    public function getReleaseDate(): \DateTime
+    public function getReleaseDate(): DateTime
     {
         return $this->releaseDate;
     }
 
-    public function getPlatform(): array
+    public function getPlatforms(): array
     {
         return $this->platforms;
     }
