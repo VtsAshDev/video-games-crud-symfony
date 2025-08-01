@@ -3,10 +3,17 @@
 namespace App\Controller;
 
 use App\Contracts\CreateVideoGameInterface;
+use App\Contracts\DeleteVideoGameInterface;
+use App\Contracts\GetVideoGameByIdInterface;
+use App\Contracts\GetVideoGameByTitleInterface;
+use App\Contracts\UpdateVideoGameInterface;
 use App\Contracts\VideoGameServiceInterface;
 use App\Dto\CreateVideoGameDto;
 use App\Dto\VideoGameWithPlatformDto;
+use App\Entity\Platform;
 use App\Entity\VideoGame;
+use App\Service\GetVideoGameByTitle;
+use App\Service\GetVideoGamesByPlatform;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -18,8 +25,12 @@ use Throwable;
 readonly class VideoGameController
 {
     public function __construct(
-        private VideoGameServiceInterface $videoGameService,
         private CreateVideoGameInterface $createVideoGameService,
+        private GetVideoGameByIdInterface $getVideoGameById,
+        private GetVideoGameByTitleInterface $getVideoGameByTitle,
+        private UpdateVideoGameInterface $updateVideoGame,
+        private DeleteVideoGameInterface $deleteVideoGame,
+        private GetVideoGamesByPlatform $getVideoGamesByPlatform,
     ) {
     }
 
@@ -29,7 +40,7 @@ readonly class VideoGameController
     ): Response {
 
         try {
-            $this->createVideoGameService->create($videoGameDto);
+            ($this->createVideoGameService)($videoGameDto);
         } catch (\Throwable $exception) {
             return new JsonResponse(["message"=>"Nao foi possivel criar o videogame"], Response::HTTP_BAD_REQUEST);
         }
@@ -41,7 +52,7 @@ readonly class VideoGameController
     public function show(int $id): Response
     {
         try {
-            $videoGame = $this->videoGameService->findById($id);
+            $videoGame = ($this->getVideoGameById)($id);
 
             return new JsonResponse($videoGame, Response::HTTP_OK,json: true);
         } catch (Throwable $exception) {
@@ -53,7 +64,7 @@ readonly class VideoGameController
     public function showByTitle(string $title): Response
     {
         try {
-            $videoGame = $this->videoGameService->findByTitle($title);
+            $videoGame = ($this->getVideoGameByTitle)($title);
 
             return new JsonResponse($videoGame, Response::HTTP_OK,json: true);
         } catch (Throwable $exception) {
@@ -74,7 +85,7 @@ readonly class VideoGameController
             );
         }
 
-        $this->videoGameService->updateVideoGame($videoGame,$videoGameDto);
+        ($this->updateVideoGame)($videoGame,$videoGameDto);
 
         return $this->show($videoGame->getId());
     }
@@ -90,7 +101,7 @@ readonly class VideoGameController
         }
 
         try {
-            $this->videoGameService->deleteVideoGame($videoGame);
+            ($this->deleteVideoGame)($videoGame);
         } catch (Throwable $exception) {
             return new JsonResponse(
                 ["message" => "Erro ao deletar o video game"],
@@ -103,7 +114,7 @@ readonly class VideoGameController
 
 
     #[Route('/api/videogame/platform/{platform}', name: 'video_game_by_platform', methods: ['GET'])]
-    public function showVideoGamesByPlatform(int $platform): Response
+    public function showVideoGamesByPlatform(?Platform $platform): Response
     {
         if (!$platform) {
             return new JsonResponse(
@@ -113,7 +124,7 @@ readonly class VideoGameController
         }
 
         try {
-            $videoGames = $this->videoGameService->getVideoGamesByPlatform($platform);
+            $videoGames = ($this->getVideoGamesByPlatform)($platform);
             return new JsonResponse($videoGames, Response::HTTP_OK,json: true);
         } catch (Throwable $exception) {
             return new JsonResponse(

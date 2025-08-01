@@ -6,5 +6,5 @@ use App\Dto\CreateVideoGameDto;
 
 interface CreateVideoGameInterface
 {
-    public function create(CreateVideoGameDto $videoGameDto): void;
+    public function __invoke(CreateVideoGameDto $videoGameDto): void;
 }

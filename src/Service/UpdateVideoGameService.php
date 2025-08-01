@@ -2,7 +2,8 @@
 
 namespace App\Service;
 
-use App\Contracts\CreateVideoGameInterface;
+use App\Contracts\UpdateVideoGameInterface;
+use App\Contracts\VideoGameServiceInterface;
 use App\Dto\CreateVideoGameDto;
 use App\Entity\VideoGame;
 use App\Repository\PlatformRepository;
@@ -10,7 +11,7 @@ use App\Repository\VideoGameRepository;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Exception;
-readonly class CreateVideoGameService implements CreateVideoGameInterface
+readonly class UpdateVideoGameService implements UpdateVideoGameInterface
 {
     public function __construct(
         private PlatformRepository $platformRepository,
@@ -18,30 +19,30 @@ readonly class CreateVideoGameService implements CreateVideoGameInterface
     ) {
     }
 
-    public function __invoke(CreateVideoGameDto $videoGameDto): void
+    public function __invoke(VideoGame $videoGame, CreateVideoGameDto $videoGameDto): void
     {
         try {
-            $videoGame = new VideoGame();
             $videoGame->setTitle($videoGameDto->getTitle());
             $videoGame->setGenre($videoGameDto->getGenre());
             $videoGame->setDeveloper($videoGameDto->getDeveloper());
             $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
+            $videoGame->clearPlatforms();
 
-            $platforms = $this->platformRepository->findPlatforms($videoGameDto->getPlatform());
-            if (empty($platforms)) {
-                throw new NotFoundHttpException("Plataformas nao podem estar em branco");
-            }
+            foreach ($videoGameDto->getPlatform() as $platform) {
+                $findedPlatform = $this->platformRepository->find($platform);
+                if (!$findedPlatform) {
+                    throw new NotFoundHttpException("Plataforma nao encontrado");
+                }
 
-            foreach ($platforms as $platform) {
-                $videoGame->addPlatform($platform);
+                $videoGame->addPlatform($findedPlatform);
             }
 
             $this->videoGameRepository->beginTransaction();
-            $this->videoGameRepository->save($videoGame);
+            $this->videoGameRepository->updateVideoGame($videoGame);
             $this->videoGameRepository->commit();
         } catch (Exception $e) {
             $this->videoGameRepository->rollback();
-            throw new BadRequestHttpException("Não foi possível cadastrar o video game");
+            throw new BadRequestHttpException("Video game nao ATUALIZADO");
         }
     }
 }
