@@ -27,7 +27,7 @@ readonly class CreateVideoGameService implements CreateVideoGameInterface
             $videoGame->setDeveloper($videoGameDto->getDeveloper());
             $videoGame->setReleaseDate($videoGameDto->getReleaseDate());
 
-            $platforms = $this->platformRepository->findPlatforms($videoGameDto->getPlatform());
+            $platforms = $this->platformRepository->findPlatforms($videoGameDto->getPlatforms());
             if (empty($platforms)) {
                 throw new NotFoundHttpException("Plataformas nao podem estar em branco");
             }

@@ -8,7 +8,7 @@ use App\Repository\VideoGameRepository;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
-readonly class GetVideoGameById implements GetVideoGameByIdInterface
+readonly class GetVideoGameByIdService implements GetVideoGameByIdInterface
 {
     public function __construct(
         private VideoGameMapper $videoGameMapper,

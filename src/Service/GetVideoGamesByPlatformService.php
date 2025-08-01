@@ -8,7 +8,7 @@ use App\Repository\VideoGameRepository;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\SerializerInterface;
 
-readonly class GetVideoGamesByPlatform
+readonly class GetVideoGamesByPlatformService
 {
     public function __construct(
         private VideoGameRepository $videoGameRepository,
