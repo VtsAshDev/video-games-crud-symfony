@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Platform;
 use App\Entity\VideoGame;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
@@ -72,7 +73,7 @@ class VideoGameRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function findByPlatform(int $platform): array
+    public function findByPlatform(Platform $platform): array
     {
         return $this->createQueryBuilder('v')
             ->innerJoin('v.platforms', 'p')
