@@ -78,12 +78,4 @@ symfony server:start
 
 ---
 
-## 🧪 Testes
-
-```bash
-php bin/phpunit
-```
-
----
-
 ## Desenvolvido por Vitor Gomes Guimarães 👨‍💻
